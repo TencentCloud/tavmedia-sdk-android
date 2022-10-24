@@ -1,0 +1,119 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+        xmlns:tools="http://schemas.android.com/tools"
+        xmlns:app="http://schemas.android.com/apk/res-auto"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        tools:context=".MainActivity">
+
+
+    <Button
+            android:id="@+id/exportActivity"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="8dp"
+            android:text="------导出示例------"
+            android:textSize="12sp"
+            android:textAllCaps="false"
+            android:onClick="jumpExportActivity"
+            app:layout_constraintTop_toTopOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent" />
+
+    <Button
+            android:id="@+id/exportActivity2"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="------模板示例------"
+            android:textSize="12sp"
+            android:textAllCaps="false"
+            android:onClick="jumpTemplateActivity"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@+id/exportActivity3" />
+
+    <Button
+            android:id="@+id/exportActivity3"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="------音频播放------"
+            android:textSize="12sp"
+            android:textAllCaps="false"
+            android:onClick="jumpAudioPlayerActivity"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@+id/exportActivity" />
+
+    <Button
+            android:id="@+id/exportActivity4"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="------多段视频------"
+            android:textSize="12sp"
+            android:textAllCaps="false"
+            android:onClick="jumpMultiClipActivity"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@+id/exportActivity2" />
+
+    <Button
+            android:id="@+id/exportActivity5"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="------抽帧示例------"
+            android:textSize="12sp"
+            android:textAllCaps="false"
+            android:onClick="jumpSnapshotActivity"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@+id/exportActivity4" />
+
+    <Button
+            android:id="@+id/exportActivity6"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="------切换画幅------"
+            android:textSize="12sp"
+            android:textAllCaps="false"
+            android:onClick="jumpUpdateRenderSizeActivity"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@+id/exportActivity5" />
+
+    <Button
+            android:id="@+id/exportActivity7"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="------颜色调节------"
+            android:textSize="12sp"
+            android:textAllCaps="false"
+            android:onClick="jumpColorTuningActivity"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@+id/exportActivity6" />
+
+    <Button
+            android:id="@+id/exportActivity8"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="------草稿演示------"
+            android:textSize="12sp"
+            android:textAllCaps="false"
+            android:onClick="jumpSerializableActivity"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@+id/exportActivity7" />
+
+    <Button
+            android:id="@+id/exportActivity10"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="-----单PAG模板-----"
+            android:textSize="12sp"
+            android:textAllCaps="false"
+            android:onClick="jumpPAGTemplateActivity"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@+id/exportActivity8" />
+
+</androidx.constraintlayout.widget.ConstraintLayout>

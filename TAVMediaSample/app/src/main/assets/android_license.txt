@@ -1,0 +1,7 @@
+{
+	"appID": "com.tencent.tavmedia.demo",
+	"packageName": "com.tencent.tavmedia.demo",
+	"entry": "tavmedia_demo",
+	"expireTime": "2025-01-01",
+	"createTime": "2022-06-30"
+}

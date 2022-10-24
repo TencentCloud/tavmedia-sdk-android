@@ -1,0 +1,138 @@
+{
+  "assets": [
+    {
+      "movieInfo": {
+        "filePath": "/sdcard/tavmedia_demo/json_asset_2.mp4",
+        "type": "MovieInfo"
+      },
+      "type": "MovieAsset",
+      "uuid": "5"
+    },
+    {
+      "movieInfo": {
+        "filePath": "/sdcard/tavmedia_demo/json_asset_1.mp4",
+        "type": "MovieInfo"
+      },
+      "type": "MovieAsset",
+      "uuid": "12"
+    }
+  ],
+  "clips": [
+    {
+      "clips": [
+        {
+          "asset_id": "5",
+          "contentDuration": 3688000,
+          "contentStartTime": 0,
+          "duration": 3688000,
+          "matrix": {
+            "values": [
+              0.84375,
+              0.0,
+              0.0,
+              0.0,
+              0.84375,
+              0.0,
+              0.0,
+              0.0,
+              1.0
+            ]
+          },
+          "opacity": 1.0,
+          "startTime": 0,
+          "type": "Movie",
+          "uuid": "6",
+          "volume": 1.0
+        },
+        {
+          "asset_id": "12",
+          "contentDuration": 3878004,
+          "contentStartTime": 0,
+          "duration": 3878004,
+          "matrix": {
+            "values": [
+              0.5625,
+              0.0,
+              0.0,
+              0.0,
+              0.5625,
+              0.0,
+              0.0,
+              0.0,
+              1.0
+            ]
+          },
+          "opacity": 1.0,
+          "startTime": 3688000,
+          "type": "Movie",
+          "uuid": "13",
+          "volume": 1.0
+        }
+      ],
+      "contentDuration": 7566004,
+      "contentStartTime": 0,
+      "duration": 7566004,
+      "height": 720,
+      "opacity": 1.0,
+      "startTime": 0,
+      "type": "Composition",
+      "uuid": "1638",
+      "volume": 1.0,
+      "width": 1280
+    },
+    {
+      "alpha": 1.0,
+      "duration": 3000000,
+      "filePath": "/sdcard/tavmedia_demo/snow.pag",
+      "inputClipIds": [
+        "1638"
+      ],
+      "matrix": {
+        "values": [
+          1.5,
+          0.0,
+          0.0,
+          0.0,
+          0.474609375,
+          0.0,
+          0.0,
+          0.0,
+          1.0
+        ]
+      },
+      "replaceImageMap": [
+        {
+          "clipIndex": 0,
+          "editableIndex": 0,
+          "matrix": {
+            "values": [
+              0.6666666865348816,
+              0.0,
+              0.0,
+              0.0,
+              2.108731508255005,
+              0.0,
+              0.0,
+              0.0,
+              1.0
+            ]
+          }
+        }
+      ],
+      "startTime": 2935000,
+      "timeStretchMode": 2,
+      "type": "PAGEffect",
+      "uuid": "1639"
+    }
+  ],
+  "contentDuration": 7566004,
+  "contentStartTime": 0,
+  "duration": 7566004,
+  "height": 720,
+  "opacity": 1.0,
+  "startTime": 0,
+  "type": "Composition",
+  "uuid": "1640",
+  "volume": 1.0,
+  "width": 1280
+}
