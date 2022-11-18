@@ -40,6 +40,7 @@ public class ExportActivity extends AppCompatActivity {
         progressBar.setProgress(0);
 
         btnExport = findViewById(R.id.export);
+        btnAuth = findViewById(R.id.auth);
 
         TAVComposition composition = Utils.makeComposition(720, 1280);
 
