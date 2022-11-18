@@ -445,6 +445,7 @@ public class Utils {
     public static void runExport(TAVMovie media, String outputFilePath, TAVExportCallback callback) {
         TAVExportConfig config = new Builder()
                 .setVideoWidth(media.width())
+                .setFrameRate(24)
                 .setVideoHeight(media.height())
                 .setOutFilePath(outputFilePath)
                 .setUseHWEncoder(true)
