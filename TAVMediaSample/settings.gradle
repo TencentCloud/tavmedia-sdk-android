@@ -1,3 +1,7 @@
 
 include ':app'
 rootProject.name = "TAVMediaDemo"
+
+// 把上级文件夹显示到项目目录来
+include ':tavmediaroot'
+project(':tavmediaroot').projectDir = new File(rootDir.getParent())
