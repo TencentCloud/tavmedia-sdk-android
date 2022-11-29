@@ -36,7 +36,7 @@ public class MainActivity extends AppCompatActivity {
 
 //        try {
 //            SELECT_DATA = Collections.singletonList(
-//                    new TinLocalImageInfoBean("/storage/emulated/0/DCIM/Camera/20220629_145315.mp4"));
+//                    new TinLocalImageInfoBean("/storage/emulated/0/tavmedia_demo/seal.mp4"));
 //        } catch (InvalidImageException e) {
 //            Log.e(TAG, "onCreate: new TinLocalImageInfoBean ", e);
 //        }

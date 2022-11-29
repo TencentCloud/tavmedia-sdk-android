@@ -142,6 +142,8 @@ public class TAVTextureView extends TextureView implements TextureView.SurfaceTe
 
     private class RenderRunnable implements Runnable {
 
+        private long positionUs;
+
         @Override
         public void run() {
             if (mediaSurface == null) {
@@ -160,6 +162,11 @@ public class TAVTextureView extends TextureView implements TextureView.SurfaceTe
                 long startTime = System.currentTimeMillis();
                 videoReader.readNextFrame();
                 long timeCons = System.currentTimeMillis() - startTime;
+                positionUs += frameDuration;
+                if (positionUs >= media.duration()) {
+                    videoReader.seekTo(0);
+                    positionUs = 0;
+                }
                 Log.d(TAG, "video read: timeCons = " + timeCons);
                 if (timeCons < frameDuration) {
                     trySleep(frameDuration - timeCons);
@@ -199,6 +206,9 @@ public class TAVTextureView extends TextureView implements TextureView.SurfaceTe
                 long startTime = System.currentTimeMillis();
                 TAVAudioFrame frame = audioReader.readNextFrame();
                 audioTrackWrapper.writeData(frame.data, 0, (int) frame.length);
+                if (frame.timestamp >= media.duration()) {
+                    audioReader.seekTo(0);
+                }
                 long timeCons = System.currentTimeMillis() - startTime;
                 Log.i(TAG, "audio read: timeCons = " + timeCons + ", timestamp = " + frame.timestamp + ", duration = "
                         + frame.duration);
