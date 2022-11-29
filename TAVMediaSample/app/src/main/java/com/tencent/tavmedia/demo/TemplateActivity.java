@@ -4,6 +4,7 @@ import android.content.Context;
 import android.content.Intent;
 import android.os.Bundle;
 import android.util.DisplayMetrics;
+import android.util.Log;
 import android.view.View;
 import android.view.ViewGroup.LayoutParams;
 import android.widget.FrameLayout;
@@ -45,6 +46,7 @@ public class TemplateActivity extends AppCompatActivity {
         getWindowManager().getDefaultDisplay().getMetrics(displayMetrics);
         TAVComposition composition = MakeComposition(width, height);
         Utils.fitToTarget(composition, displayMetrics.widthPixels, displayMetrics.heightPixels);
+        Log.i(TAG, "MakeComposition: json = \n" + composition.toJson());
         textureView.setMedia(composition);
 
         FrameLayout root = findViewById(R.id.fl_root);

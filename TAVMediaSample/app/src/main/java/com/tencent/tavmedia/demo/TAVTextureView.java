@@ -38,7 +38,7 @@ public class TAVTextureView extends TextureView implements TextureView.SurfaceTe
 
     private static final String TAG = "TAVTextureView";
     private final int fps = 20;
-    private final int frameDuration = 1000 / fps;
+    private final int frameDurationMs = 1000 / fps;
     private boolean isAttachedToWindow = false;
     private TAVSurface mediaSurface;
     private TAVVideoReader videoReader;
@@ -162,14 +162,14 @@ public class TAVTextureView extends TextureView implements TextureView.SurfaceTe
                 long startTime = System.currentTimeMillis();
                 videoReader.readNextFrame();
                 long timeCons = System.currentTimeMillis() - startTime;
-                positionUs += frameDuration;
-                if (positionUs >= media.duration()) {
+                positionUs += frameDurationMs;
+                if (positionUs >= media.duration() / 1000) {
                     videoReader.seekTo(0);
                     positionUs = 0;
                 }
-                Log.d(TAG, "video read: timeCons = " + timeCons);
-                if (timeCons < frameDuration) {
-                    trySleep(frameDuration - timeCons);
+                Log.d(TAG, "video read: timeCons = " + timeCons + ", positionUs = " + positionUs + ", duration = " + media.duration());
+                if (timeCons < frameDurationMs) {
+                    trySleep(frameDurationMs - timeCons);
                 }
             }
         }
