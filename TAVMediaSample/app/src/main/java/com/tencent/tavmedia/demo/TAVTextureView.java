@@ -142,7 +142,7 @@ public class TAVTextureView extends TextureView implements TextureView.SurfaceTe
 
     private class RenderRunnable implements Runnable {
 
-        private long positionUs;
+        private long positionMs;
 
         @Override
         public void run() {
@@ -162,12 +162,14 @@ public class TAVTextureView extends TextureView implements TextureView.SurfaceTe
                 long startTime = System.currentTimeMillis();
                 videoReader.readNextFrame();
                 long timeCons = System.currentTimeMillis() - startTime;
-                positionUs += frameDurationMs;
-                if (positionUs >= media.duration() / 1000) {
+                positionMs += frameDurationMs;
+                if (positionMs >= media.duration() / 1000) {
                     videoReader.seekTo(0);
-                    positionUs = 0;
+                    positionMs = 0;
                 }
-                Log.d(TAG, "video read: timeCons = " + timeCons + ", positionUs = " + positionUs + ", duration = " + media.duration());
+                if (timeCons > 50){
+                    Log.d(TAG, "video read: timeCons = " + timeCons + ", positionMs = " + positionMs + ", duration = " + media.duration());
+                }
                 if (timeCons < frameDurationMs) {
                     trySleep(frameDurationMs - timeCons);
                 }
@@ -210,9 +212,10 @@ public class TAVTextureView extends TextureView implements TextureView.SurfaceTe
                     audioReader.seekTo(0);
                 }
                 long timeCons = System.currentTimeMillis() - startTime;
-                Log.i(TAG, "audio read: timeCons = " + timeCons + ", timestamp = " + frame.timestamp + ", duration = "
-                        + frame.duration);
-
+                if (timeCons > 50){
+                    Log.d(TAG, "audio read: timeCons = " + timeCons + ", timestamp = " + frame.timestamp + ", duration = "
+                            + frame.duration);
+                }
                 long frameDurationMs = frame.duration / 1000;
                 if (timeCons < frameDurationMs) {
                     trySleep(frameDurationMs - timeCons);

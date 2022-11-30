@@ -31,7 +31,9 @@ public class TemplateActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_template);
-        initTextureView(720, 1280);
+        DisplayMetrics displayMetrics = new DisplayMetrics();
+        getWindowManager().getDefaultDisplay().getMetrics(displayMetrics);
+        initTextureView(displayMetrics.widthPixels, (float) (displayMetrics.widthPixels * (1280.0 / 720)));
     }
 
     public void switchRenderSize(View view) {
@@ -42,13 +44,9 @@ public class TemplateActivity extends AppCompatActivity {
 
         TAVTextureView textureView = new TAVTextureView(this);
         textureView.setLayoutParams(new FrameLayout.LayoutParams(LayoutParams.MATCH_PARENT, LayoutParams.MATCH_PARENT));
-        DisplayMetrics displayMetrics = new DisplayMetrics();
-        getWindowManager().getDefaultDisplay().getMetrics(displayMetrics);
         TAVComposition composition = MakeComposition(width, height);
-        Utils.fitToTarget(composition, displayMetrics.widthPixels, displayMetrics.heightPixels);
         Log.i(TAG, "MakeComposition: json = \n" + composition.toJson());
         textureView.setMedia(composition);
-
         FrameLayout root = findViewById(R.id.fl_root);
         root.removeAllViews();
         root.addView(textureView);
@@ -77,7 +75,7 @@ public class TemplateActivity extends AppCompatActivity {
         movie4.setDuration(movieDuration);
 
         // 用pag文件构建effect对象，指定时间长度，这里是三个做转场的effect
-        TAVPAGEffect transition1 = Utils.makePAGEffect("ZC1.pag", width, height);
+        TAVPAGEffect transition1 = Utils.makePAGEffect("ZC0.pag", width, height);
         transition1.setDuration(1_000_000);
 
         TAVPAGEffect transition2 = Utils.makePAGEffect("ZC2.pag", width, height);
@@ -122,14 +120,8 @@ public class TemplateActivity extends AppCompatActivity {
         composition.addClip(transition3);
         composition.setDuration(totalDuration);
 
-        TAVPAGEffect pt = Utils.makePAGEffect("PT.pag", width, height);
-        pt.setDuration(3_000_000);
-        if (pt.numImages() > 0) {
-            pt.addInput(composition);
-            pt.replaceImage(0, 0);
-        }
 
-        TAVPAGEffect fw = Utils.makePAGEffect("FW.pag", width, height);
+        TAVPAGEffect fw = Utils.makePAGEffect("FW0.pag", width, height);
         fw.setDuration(composition.duration());
         fw.setTimeStretchMode(TAVTimeStretchMode.TAVTimeStretchModeRepeat);
         if (fw.numImages() > 0) {
@@ -147,7 +139,7 @@ public class TemplateActivity extends AppCompatActivity {
 
         TAVComposition root = TAVComposition.Make(composition.width(), composition.height(), 0, composition.duration());
         root.setDuration(composition.duration());
-        root.addClip(pt);
+        root.addClip(composition);
         root.addClip(fw);
         root.addClip(pw);
 
