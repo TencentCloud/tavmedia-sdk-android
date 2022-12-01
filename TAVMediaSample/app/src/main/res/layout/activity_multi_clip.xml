@@ -6,11 +6,22 @@
         android:layout_height="match_parent"
         tools:context=".MultiClipActivity">
 
+    <SeekBar
+            style="@style/Widget.AppCompat.SeekBar.Discrete"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:max="10"
+            android:progress="3"
+            android:id="@+id/seekBar"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintBottom_toBottomOf="@+id/fl_root"
+            android:layout_marginBottom="16dp" />
+
     <FrameLayout
             android:id="@+id/fl_root"
             android:layout_width="match_parent"
             android:layout_height="match_parent">
-
     </FrameLayout>
 
 </androidx.constraintlayout.widget.ConstraintLayout>

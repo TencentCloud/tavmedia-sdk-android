@@ -46,6 +46,7 @@ public class Utils {
     private static final String TAG = "TAVMedia_Utils";
     public static String OUT_SAVE_DIR = "/sdcard/tavmedia_demo/";
     public static final String OUT_SAVE_EXPORT_DIR = OUT_SAVE_DIR + "export/";
+    public static final String AUTO_TEST_DIR = OUT_SAVE_DIR + "auto_test/";
     public static final String OUT_SAVE_VIDEOS_DIR = OUT_SAVE_DIR + "resources/";
     private static String TARGET_BASE_PATH;
 

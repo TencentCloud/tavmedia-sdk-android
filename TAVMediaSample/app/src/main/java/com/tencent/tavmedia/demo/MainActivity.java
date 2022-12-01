@@ -15,7 +15,9 @@ import com.mylhyl.acp.AcpOptions.Builder;
 import com.tencent.libav.LocalAlbumActivity;
 import com.tencent.libav.PhotoSelectorProxyConsts;
 import com.tencent.libav.model.TinLocalImageInfoBean;
+import com.tencent.libav.model.TinLocalImageInfoBean.InvalidImageException;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 
 public class MainActivity extends AppCompatActivity {
@@ -26,14 +28,16 @@ public class MainActivity extends AppCompatActivity {
     private static final int REQUEST_CODE = 10086;
 
     private Runnable onSelectedVideo;
-
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
         Utils.initCacheDir(this);
         requestPermissions();
+    }
 
+    private void onAssetsCopyDone() {
+        // 这里可以放启动app直接进入的逻辑
 //        try {
 //            SELECT_DATA = Collections.singletonList(
 //                    new TinLocalImageInfoBean("/storage/emulated/0/tavmedia_demo/seal.mp4"));
@@ -70,14 +74,17 @@ public class MainActivity extends AppCompatActivity {
     public void jumpColorTuningActivity(View view) {
         selectVideo(false, () -> ColorTuningActivity.start(view.getContext()));
     }
-
     public void jumpSerializableActivity(View view) {
         SerializableActivity.start(view.getContext());
     }
 
     public void jumpPAGTemplateActivity(View view) {
         Toast.makeText(this, "请选3个素材", Toast.LENGTH_LONG).show();
-        selectVideo(false, () -> PAGTemplateActivity.start(view.getContext()));
+        selectVideo(false,  () -> PAGTemplateActivity.start(view.getContext()));
+    }
+
+    public void jumpAutoTestActivity(View view) {
+        AutoTestActivity.start(view.getContext());
     }
 
     private void selectVideo(boolean onlyVideo, Runnable onSelectedVideo) {
@@ -99,7 +106,7 @@ public class MainActivity extends AppCompatActivity {
             @Override
             public void onGranted() {
                 Log.i(TAG, "onGranted() called 权限ok");
-                new AssetsCopyHelper(MainActivity.this).run();
+                new AssetsCopyHelper(MainActivity.this, () -> onAssetsCopyDone()).run();
             }
 
             @Override

@@ -66,9 +66,8 @@ public class AudioPlayerActivity extends AppCompatActivity {
             TAVMovieAsset asset = TAVMovieAsset.MakeFromPath(path);
             TAVMovie media = TAVMovie.MakeFrom(asset, 0, asset.duration());
             media.setDuration(asset.duration());
-            audioReader = TAVAudioReader.Make(media);
-
-            audioTrackWrapper = new AudioTrackWrapper(44100, 2);
+            audioReader = TAVAudioReader.Make(media, 44100, 2, 4096);
+            audioTrackWrapper = new AudioTrackWrapper(44100, 2, 4096);
             audioTrackWrapper.setVolume(1);
 
             isPlaying = true;

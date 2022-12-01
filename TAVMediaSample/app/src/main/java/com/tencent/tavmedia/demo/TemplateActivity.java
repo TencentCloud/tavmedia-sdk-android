@@ -4,7 +4,6 @@ import android.content.Context;
 import android.content.Intent;
 import android.os.Bundle;
 import android.util.DisplayMetrics;
-import android.util.Log;
 import android.view.View;
 import android.view.ViewGroup.LayoutParams;
 import android.widget.FrameLayout;
@@ -31,9 +30,7 @@ public class TemplateActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_template);
-        DisplayMetrics displayMetrics = new DisplayMetrics();
-        getWindowManager().getDefaultDisplay().getMetrics(displayMetrics);
-        initTextureView(displayMetrics.widthPixels, (float) (displayMetrics.widthPixels * (1280.0 / 720)));
+        initTextureView(720, 1280);
     }
 
     public void switchRenderSize(View view) {
@@ -44,9 +41,12 @@ public class TemplateActivity extends AppCompatActivity {
 
         TAVTextureView textureView = new TAVTextureView(this);
         textureView.setLayoutParams(new FrameLayout.LayoutParams(LayoutParams.MATCH_PARENT, LayoutParams.MATCH_PARENT));
+        DisplayMetrics displayMetrics = new DisplayMetrics();
+        getWindowManager().getDefaultDisplay().getMetrics(displayMetrics);
         TAVComposition composition = MakeComposition(width, height);
-        Log.i(TAG, "MakeComposition: json = \n" + composition.toJson());
+        Utils.fitToTarget(composition, displayMetrics.widthPixels, displayMetrics.heightPixels);
         textureView.setMedia(composition);
+
         FrameLayout root = findViewById(R.id.fl_root);
         root.removeAllViews();
         root.addView(textureView);

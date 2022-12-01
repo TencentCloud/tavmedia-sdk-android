@@ -34,17 +34,27 @@ import com.tencent.tavmedia.TAVMovie;
 import com.tencent.tavmedia.TAVSurface;
 import com.tencent.tavmedia.TAVVideoReader;
 
-public class TAVTextureView extends TextureView implements TextureView.SurfaceTextureListener {
+public class TAVTextureView extends TextureView {
 
     private static final String TAG = "TAVTextureView";
-    private final int fps = 20;
+    private final int fps = 24;
     private final int frameDurationMs = 1000 / fps;
     private boolean isAttachedToWindow = false;
     private TAVSurface mediaSurface;
     private TAVVideoReader videoReader;
+    private TAVAudioReader audioReader;
     private TAVMovie media;
     private boolean isPlaying = false;
+    private final Object videoSeekSyncObject = new Object();
+    private final Object audioSeekSyncObject = new Object();
+    private volatile long videoSeekTime;
+    private volatile long audioSeekTime;
+    private PlayerListener playerListener;
 
+    interface PlayerListener {
+
+        void onProgressChanged(float process);
+    }
 
     public TAVTextureView(Context context) {
         this(context, null);
@@ -53,25 +63,8 @@ public class TAVTextureView extends TextureView implements TextureView.SurfaceTe
     public TAVTextureView(Context context, AttributeSet attrs) {
         super(context, attrs);
         setOpaque(false);
-        setSurfaceTextureListener(this);
+        setSurfaceTextureListener(new MySurfaceTextureListener());
         setKeepScreenOn(true);
-    }
-
-    @Override
-    public void onSurfaceTextureAvailable(SurfaceTexture surface, int width, int height) {
-        if (mediaSurface != null) {
-            mediaSurface.release();
-            mediaSurface = null;
-        }
-        if (videoReader != null) {
-            videoReader.release();
-            videoReader = null;
-        }
-
-        mediaSurface = TAVSurface.FromSurfaceTexture(surface);
-        if (!isPlaying) {
-            play();
-        }
     }
 
     public void setMedia(TAVMovie media) {
@@ -81,33 +74,8 @@ public class TAVTextureView extends TextureView implements TextureView.SurfaceTe
         this.media = media;
     }
 
-    @Override
-    public void onSurfaceTextureSizeChanged(SurfaceTexture surface, int width, int height) {
-
-    }
-
-    @Override
-    public boolean onSurfaceTextureDestroyed(SurfaceTexture surface) {
-        if (isPlaying) {
-            stop();
-        }
-        if (mediaSurface != null) {
-            mediaSurface.release();
-            mediaSurface = null;
-            videoReader = null;
-        }
-        if (videoReader != null) {
-            videoReader.release();
-            videoReader = null;
-        }
-        if (!isPlaying) {
-            stop();
-        }
-        return false;
-    }
-
-    @Override
-    public void onSurfaceTextureUpdated(SurfaceTexture surface) {
+    public void setPlayerListener(PlayerListener playerListener) {
+        this.playerListener = playerListener;
     }
 
     @Override
@@ -139,6 +107,65 @@ public class TAVTextureView extends TextureView implements TextureView.SurfaceTe
         new Thread(new AudioRenderRunnable(), "tav_demo_play_audio_thread").start();
     }
 
+    public void seekTo(double progress) {
+        synchronized (videoSeekSyncObject) {
+            videoSeekTime = (long) (media.duration() * progress);
+        }
+        synchronized (audioSeekSyncObject) {
+            audioSeekTime = (long) (media.duration() * progress);
+        }
+    }
+
+    private class MySurfaceTextureListener implements SurfaceTextureListener {
+
+        @Override
+        public void onSurfaceTextureAvailable(SurfaceTexture surface, int width, int height) {
+            if (mediaSurface != null) {
+                mediaSurface.release();
+                mediaSurface = null;
+            }
+            if (videoReader != null) {
+                videoReader.release();
+                videoReader = null;
+            }
+
+            mediaSurface = TAVSurface.FromSurfaceTexture(surface);
+            if (!isPlaying) {
+                play();
+            }
+        }
+
+        @Override
+        public void onSurfaceTextureSizeChanged(SurfaceTexture surface, int width, int height) {
+
+        }
+
+        @Override
+        public boolean onSurfaceTextureDestroyed(SurfaceTexture surface) {
+            if (isPlaying) {
+                stop();
+            }
+            if (mediaSurface != null) {
+                mediaSurface.release();
+                mediaSurface = null;
+                videoReader = null;
+            }
+            if (videoReader != null) {
+                videoReader.release();
+                videoReader = null;
+            }
+            if (!isPlaying) {
+                stop();
+            }
+            return false;
+        }
+
+        @Override
+        public void onSurfaceTextureUpdated(SurfaceTexture surface) {
+            Log.d("ffjiefan:", "onSurfaceTextureUpdated() called with: surface = [" + surface + "]");
+        }
+    }
+
 
     private class RenderRunnable implements Runnable {
 
@@ -159,17 +186,26 @@ public class TAVTextureView extends TextureView implements TextureView.SurfaceTe
 
         private void runLoop(TAVVideoReader videoReader) {
             while (isPlaying()) {
+                synchronized (videoSeekSyncObject) {
+                    if (videoSeekTime >= 0) {
+                        videoReader.seekTo(videoSeekTime);
+                        positionMs = videoSeekTime / 1000;
+                        videoSeekTime = -1;
+                    } else {
+                        positionMs += frameDurationMs;
+                    }
+                }
+                if (playerListener != null) {
+                    playerListener.onProgressChanged((float) (positionMs * 1000.0 / media.duration()));
+                }
                 long startTime = System.currentTimeMillis();
-                videoReader.readNextFrame();
-                long timeCons = System.currentTimeMillis() - startTime;
-                positionMs += frameDurationMs;
                 if (positionMs >= media.duration() / 1000) {
                     videoReader.seekTo(0);
                     positionMs = 0;
                 }
-                if (timeCons > 50){
-                    Log.d(TAG, "video read: timeCons = " + timeCons + ", positionMs = " + positionMs + ", duration = " + media.duration());
-                }
+                videoReader.readNextFrame();
+                long timeCons = System.currentTimeMillis() - startTime;
+                Log.v(TAG, "video read: timeCons = " + timeCons);
                 if (timeCons < frameDurationMs) {
                     trySleep(frameDurationMs - timeCons);
                 }
@@ -188,11 +224,13 @@ public class TAVTextureView extends TextureView implements TextureView.SurfaceTe
 
     private class AudioRenderRunnable implements Runnable {
 
+
         @Override
         public void run() {
 
-            TAVAudioReader audioReader = TAVAudioReader.Make(media);
-            AudioTrackWrapper audioTrackWrapper = new AudioTrackWrapper(44100, 2);
+            audioReader = TAVAudioReader.Make(media, 44100, 4096, 2);
+            // AudioTrack的参数要和上面保持一致，否则容易出出现爆音的问题
+            AudioTrackWrapper audioTrackWrapper = new AudioTrackWrapper(44100, 2, 4096);
             audioTrackWrapper.setVolume(1);
             // 开始
             runLoop(audioReader, audioTrackWrapper);
@@ -205,6 +243,12 @@ public class TAVTextureView extends TextureView implements TextureView.SurfaceTe
                 return;
             }
             while (isPlaying()) {
+                synchronized (audioSeekSyncObject) {
+                    if (audioSeekTime >= 0) {
+                        audioReader.seekTo(audioSeekTime);
+                        audioSeekTime = -1;
+                    }
+                }
                 long startTime = System.currentTimeMillis();
                 TAVAudioFrame frame = audioReader.readNextFrame();
                 audioTrackWrapper.writeData(frame.data, 0, (int) frame.length);
@@ -212,10 +256,9 @@ public class TAVTextureView extends TextureView implements TextureView.SurfaceTe
                     audioReader.seekTo(0);
                 }
                 long timeCons = System.currentTimeMillis() - startTime;
-                if (timeCons > 50){
-                    Log.d(TAG, "audio read: timeCons = " + timeCons + ", timestamp = " + frame.timestamp + ", duration = "
-                            + frame.duration);
-                }
+                Log.v(TAG, "audio read: timeCons = " + timeCons + ", timestamp = " + frame.timestamp + ", duration = "
+                        + frame.duration + ", length = " + frame.length);
+
                 long frameDurationMs = frame.duration / 1000;
                 if (timeCons < frameDurationMs) {
                     trySleep(frameDurationMs - timeCons);

@@ -81,9 +81,8 @@ public class ExportActivity extends AppCompatActivity {
 
         @Override
         public void onProgress(float progress) {
-            Log.d(TAG, "onProgress() called with: progress = [" + progress + "]");
+            Log.v(TAG, "onProgress() called with: progress = [" + progress + "]");
             progressBar.setProgress((int) (progress * 100));
-
         }
 
         @Override

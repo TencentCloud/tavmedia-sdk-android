@@ -6,6 +6,8 @@ import android.os.Bundle;
 import android.util.DisplayMetrics;
 import android.view.ViewGroup.LayoutParams;
 import android.widget.FrameLayout;
+import android.widget.SeekBar;
+import android.widget.SeekBar.OnSeekBarChangeListener;
 import androidx.appcompat.app.AppCompatActivity;
 import com.tencent.tavmedia.TAVComposition;
 import com.tencent.tavmedia.TAVFont;
@@ -13,7 +15,13 @@ import com.tencent.tavmedia.TAVPAGEffect;
 
 public class MultiClipActivity extends AppCompatActivity {
 
+    /**
+     * 此页面seekBar的max设置过大会干扰到TAVTextureView的刷新率，导致卡顿现象，应该是Android UI系统的问题
+     */
+    private static final int MAX_PROGRESS = 1000;
     private FrameLayout flRoot;
+    private SeekBar seekBar;
+    private TAVTextureView textureView;
 
     public static void start(Context context) {
         Intent starter = new Intent(context, MultiClipActivity.class);
@@ -26,12 +34,33 @@ public class MultiClipActivity extends AppCompatActivity {
         setContentView(R.layout.activity_multi_clip);
         flRoot = findViewById(R.id.fl_root);
         flRoot.post(this::initTextureView);
+        seekBar = findViewById(R.id.seekBar);
+        seekBar.setMax(MAX_PROGRESS);
+        seekBar.setOnSeekBarChangeListener(new OnSeekBarChangeListener() {
+            @Override
+            public void onProgressChanged(SeekBar seekBar, int progress, boolean fromUser) {
+                if (!fromUser || textureView == null) {
+                    return;
+                }
+                textureView.seekTo(progress * 1.0 / MAX_PROGRESS);
+            }
+
+            @Override
+            public void onStartTrackingTouch(SeekBar seekBar) {
+
+            }
+
+            @Override
+            public void onStopTrackingTouch(SeekBar seekBar) {
+
+            }
+        });
     }
 
 
     private void initTextureView() {
 
-        TAVTextureView textureView = new TAVTextureView(this);
+        textureView = new TAVTextureView(this);
         textureView.setLayoutParams(new FrameLayout.LayoutParams(LayoutParams.MATCH_PARENT, LayoutParams.MATCH_PARENT));
         DisplayMetrics displayMetrics = new DisplayMetrics();
         getWindowManager().getDefaultDisplay().getMetrics(displayMetrics);
@@ -52,7 +81,7 @@ public class MultiClipActivity extends AppCompatActivity {
         }
         composition.addClip(title);
         textureView.setMedia(composition);
-
+        textureView.setPlayerListener(process -> seekBar.setProgress((int) (process * MAX_PROGRESS)));
         flRoot.addView(textureView);
     }
 

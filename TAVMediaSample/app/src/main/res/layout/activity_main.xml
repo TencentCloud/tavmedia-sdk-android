@@ -8,6 +8,31 @@
 
 
     <Button
+            android:id="@+id/btn_jumpToRenderTest"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:textAllCaps="false"
+            android:onClick="jumpDecodeToSurfaceActivity"
+            android:text="DecodeToSurfaceActivity"
+            android:layout_marginTop="8dp"
+            android:visibility="gone"
+            app:layout_constraintTop_toTopOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent" />
+
+    <Button
+            android:id="@+id/btn_jumpToRenderTest2"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:textAllCaps="false"
+            android:onClick="jumpFromSurfaceActivity"
+            android:text="FromSurfaceActivity"
+            android:visibility="gone"
+            app:layout_constraintTop_toBottomOf="@+id/btn_jumpToRenderTest"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent" />
+
+    <Button
             android:id="@+id/exportActivity"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
@@ -16,9 +41,9 @@
             android:textSize="12sp"
             android:textAllCaps="false"
             android:onClick="jumpExportActivity"
-            app:layout_constraintTop_toTopOf="parent"
             app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintStart_toStartOf="parent" />
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@+id/btn_jumpToRenderTest2" />
 
     <Button
             android:id="@+id/exportActivity2"
@@ -115,5 +140,32 @@
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toBottomOf="@+id/exportActivity8" />
+
+    <Button
+            android:id="@+id/textActivity11"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="--------文本--------"
+            android:textSize="12sp"
+            android:visibility="gone"
+            android:textAllCaps="false"
+            android:onClick="jumpTextActivity"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintHorizontal_bias="0.503"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@+id/exportActivity10" />
+
+    <Button
+            android:id="@+id/exportActivity9"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="------测试页面------"
+            android:textSize="12sp"
+            android:textAllCaps="false"
+            android:onClick="jumpAutoTestActivity"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@+id/textActivity11"
+            app:layout_constraintHorizontal_bias="0.496" />
 
 </androidx.constraintlayout.widget.ConstraintLayout>
