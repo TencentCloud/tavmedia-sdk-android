@@ -47,6 +47,7 @@ public class Utils {
     public static String OUT_SAVE_DIR = "/sdcard/tavmedia_demo/";
     public static final String OUT_SAVE_EXPORT_DIR = OUT_SAVE_DIR + "export/";
     public static final String AUTO_TEST_DIR = OUT_SAVE_DIR + "auto_test/";
+    public static final String SNAPSHOT_DIR = OUT_SAVE_DIR + "snapshot/";
     public static final String OUT_SAVE_VIDEOS_DIR = OUT_SAVE_DIR + "resources/";
     private static String TARGET_BASE_PATH;
 
@@ -230,16 +231,16 @@ public class Utils {
 
         try {
             if (file.delete()) {
-                Log.d(TAG, "export: 文件已存在，删除");
+                Log.d(TAG, "createNewFile: 文件已存在，删除");
             }
 
             if (!file.createNewFile()) {
-                Log.e(TAG, "export: 创建输出文件失败:" + file.getAbsolutePath());
+                Log.e(TAG, "createNewFile: 创建输出文件失败:" + file.getAbsolutePath());
                 return null;
             }
         } catch (IOException e) {
             e.printStackTrace();
-            Log.e(TAG, "export: 创建输出文件失败, e = ", e);
+            Log.e(TAG, "createNewFile: 创建输出文件失败, e = ", e);
             return null;
         }
         return file;
