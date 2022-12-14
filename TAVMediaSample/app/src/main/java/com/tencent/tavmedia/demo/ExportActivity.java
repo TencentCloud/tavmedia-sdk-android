@@ -4,28 +4,32 @@ import android.content.Context;
 import android.content.Intent;
 import android.os.Bundle;
 import android.util.Log;
+import android.view.View;
 import android.widget.Button;
 import android.widget.ProgressBar;
 import androidx.appcompat.app.AppCompatActivity;
 import com.tencent.tavmedia.TAVComposition;
+import com.tencent.tavmedia.TAVExport;
 import com.tencent.tavmedia.TAVExportCallback;
+import com.tencent.tavmedia.TAVExportConfig;
+import com.tencent.tavmedia.TAVExportConfig.Builder;
 import com.tencent.tavmedia.license.TAVLicense;
+import com.tencent.tavmedia.license.TAVLicense.TAVLicenseAuthListener;
 import java.io.File;
 
 public class ExportActivity extends AppCompatActivity {
 
     private static final String TAG = "ExportActivity";
+    private static final int MAX_PROGRESS = 1000;
     private Button btnExport;
-    private Button btnAuth;
     private ProgressBar progressBar;
-    private File newFile;
+    private TAVExport tavExport;
 
     public static void start(Context context) {
         Intent starter = new Intent(context, ExportActivity.class);
         context.startActivity(starter);
     }
 
-    TAVLicense.TAVLicenseAuthListener licenseAuthListener;
 
     String licenseUrl = "replace_your_license_url";
     String licenseAppId = "replace_your_app_id";
@@ -36,31 +40,66 @@ public class ExportActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_export);
         progressBar = findViewById(R.id.progressBar);
-        progressBar.setMax(100);
+        progressBar.setMax(MAX_PROGRESS);
         progressBar.setProgress(0);
-
         btnExport = findViewById(R.id.export);
-        btnAuth = findViewById(R.id.auth);
+    }
 
+    public void auth(View view) {
+        TAVLicense.getInstance()
+                .Auth(getBaseContext(), licenseUrl, licenseKey, licenseAppId, new MyTAVLicenseAuthListener());
+    }
+
+    public void export(View view) {
+        btnExport.setEnabled(false);
+        File newFile = Utils.createNewFile(Utils.OUT_SAVE_EXPORT_DIR, "test_tav_export_video.mp4");
         TAVComposition composition = Utils.makeComposition(720, 1280);
+        TAVExportConfig config = new Builder()
+                .setVideoWidth(composition.width())
+                .setVideoHeight(composition.height())
+                .setOutFilePath(newFile.getAbsolutePath())
+                .setFrameRate(30)
+                .setUseHWEncoder(true)
+                .build();
+        tavExport = new TAVExport(composition, config, new MyTAVExportCallback(newFile));
+        new Thread(() -> tavExport.export()).start();
+    }
 
-        licenseAuthListener = (errorCode, msg) -> {
+    public void cancel(View view) {
+        if (tavExport != null) {
+            tavExport.cancel();
+            onExportFinish();
+        }
+    }
+
+    private synchronized void onExportFinish() {
+        Log.d(TAG, "onExportFinish() called");
+        // 变量置空，及时释放内存
+        tavExport = null;
+        runOnUiThread(() -> {
+            Log.d(TAG, "onExportFinish() runOnUiThread");
+            btnExport.setEnabled(true);
+            progressBar.setProgress(0);
+        });
+    }
+
+    private synchronized void setProgress(float progress) {
+        if (tavExport == null) {
+            return;
+        }
+        progressBar.setProgress((int) (progress * MAX_PROGRESS));
+    }
+
+    private static class MyTAVLicenseAuthListener implements TAVLicenseAuthListener {
+
+        @Override
+        public void onLicenseAuthResult(int errorCode, String msg) {
             if (errorCode == TAVLicense.LICENSE_AUTH_SUCCESS) {
                 Log.d("export", "auth success " + msg);
             } else {
                 Log.e("export", "auth failed and errorCode is " + errorCode + " " + msg);
             }
-        };
-
-        btnExport.setOnClickListener(v -> {
-            btnExport.setEnabled(false);
-            newFile = Utils.createNewFile(Utils.OUT_SAVE_EXPORT_DIR, "test_tav_export_video.mp4");
-            Utils.runExport(composition, newFile.getAbsolutePath(), new MyTAVExportCallback(newFile));
-        });
-
-        btnAuth.setOnClickListener(v -> {
-            TAVLicense.getInstance().Auth(getBaseContext(), licenseUrl, licenseKey, licenseAppId, licenseAuthListener);
-        });
+        }
     }
 
 
@@ -82,7 +121,7 @@ public class ExportActivity extends AppCompatActivity {
         @Override
         public void onProgress(float progress) {
             Log.v(TAG, "onProgress() called with: progress = [" + progress + "]");
-            progressBar.setProgress((int) (progress * 100));
+            setProgress(progress);
         }
 
         @Override
@@ -90,10 +129,7 @@ public class ExportActivity extends AppCompatActivity {
             Log.i(TAG, "onError() called with: errorCode = [" + errorCode + "]");
             onExportFinish();
         }
-
-        private void onExportFinish() {
-            btnExport.post(() -> btnExport.setEnabled(true));
-            ExportActivity.this.finish();
-        }
     }
+
+
 }

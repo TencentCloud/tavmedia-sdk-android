@@ -6,16 +6,6 @@
         android:layout_height="match_parent"
         tools:context=".ExportActivity">
 
-    <Button
-            android:id="@+id/export"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="导出"
-            app:layout_constraintBottom_toBottomOf="parent"
-            app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintHorizontal_bias="0.498"
-            android:layout_marginBottom="24dp" />
 
     <ProgressBar
             style="@style/Widget.AppCompat.ProgressBar.Horizontal"
@@ -23,21 +13,46 @@
             android:layout_height="249dp"
             android:id="@+id/progressBar"
             app:layout_constraintTop_toTopOf="parent"
-            app:layout_constraintBottom_toTopOf="@+id/export"
+            app:layout_constraintBottom_toTopOf="@+id/auth"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintEnd_toEndOf="parent"
             android:layout_marginEnd="16dp"
             android:layout_marginStart="16dp" />
 
+
     <Button
             android:id="@+id/auth"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_marginBottom="36dp"
             android:text="鉴权"
+            android:onClick="auth"
             app:layout_constraintBottom_toTopOf="@+id/export"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintHorizontal_bias="0.498"
             app:layout_constraintStart_toStartOf="parent" />
+
+    <Button
+            android:id="@+id/export"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="导出"
+            android:onClick="export"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintHorizontal_bias="0.498"
+            app:layout_constraintBottom_toTopOf="@+id/cancel" />
+
+    <Button
+            android:id="@+id/cancel"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="取消"
+            android:onClick="cancel"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintHorizontal_bias="0.498"
+            android:layout_marginBottom="8dp" />
+
 
 </androidx.constraintlayout.widget.ConstraintLayout>
