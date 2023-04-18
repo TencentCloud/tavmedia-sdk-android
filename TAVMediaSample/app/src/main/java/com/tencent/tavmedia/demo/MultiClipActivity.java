@@ -8,10 +8,12 @@ import android.view.ViewGroup.LayoutParams;
 import android.widget.FrameLayout;
 import android.widget.SeekBar;
 import android.widget.SeekBar.OnSeekBarChangeListener;
+import android.widget.Toast;
 import androidx.appcompat.app.AppCompatActivity;
 import com.tencent.tavmedia.TAVComposition;
 import com.tencent.tavmedia.TAVFont;
 import com.tencent.tavmedia.TAVPAGEffect;
+import com.tencent.tavmedia.TAVPAGTextAttribute;
 
 public class MultiClipActivity extends AppCompatActivity {
 
@@ -67,23 +69,44 @@ public class MultiClipActivity extends AppCompatActivity {
         TAVComposition composition = Utils.makeComposition(MainActivity.SELECT_DATA, displayMetrics.widthPixels,
                 displayMetrics.heightPixels
         );
-        // 替换文本
+//        TAVComposition composition = TAVComposition.Make(displayMetrics.widthPixels, displayMetrics.heightPixels, 0,10000000);
+//        // 替换文本
         TAVPAGEffect title = Utils.makePAGEffect("font.pag", displayMetrics.widthPixels,
                 displayMetrics.heightPixels);
         // register font：没有需求的话不需要注册字体库，默认使用Android系统字体
-        boolean sucess = TAVFont.RegisterFont(Utils.OUT_SAVE_DIR + "font_huangyou.ttf", 0, "PingFang SC", "Semibold");
+        boolean sucess = TAVFont.RegisterFont(Utils.OUT_SAVE_DIR + "Source Han Sans CN-Regular.ttc", 0, "Source Han Sans CN", "Regular");
+        if (!sucess) {
+            throw new RuntimeException("register font failed");
+        }
         // unregister font：取消掉注册的字体后，会回到Android字体
-        TAVFont.UnregisterFont("PingFang SC", "Semibold");
+//        TAVFont.UnregisterFont("PingFang SC", "Semibold");
         title.setDuration(composition.duration());
 
-        if (title.numTexts() > 0) {
-            title.replaceText(0, "替换文本");
-        }
         composition.addClip(title);
         textureView.setMedia(composition);
         textureView.setPlayerListener(process -> seekBar.setProgress((int) (process * MAX_PROGRESS)));
         flRoot.addView(textureView);
+
+        flRoot.setOnClickListener(v -> {
+            if (flag) {
+                Toast.makeText(this, "设置字体", Toast.LENGTH_SHORT).show();
+                TAVPAGTextAttribute attribute = new TAVPAGTextAttribute();
+                attribute.fontFamily = "Source Han Sans CN";
+                attribute.fontStyle = "Regular";
+                attribute.fontSize = 60;
+                attribute.text = "文本替换试验";
+                title.replaceText(0, attribute);
+            } else {
+                TAVPAGTextAttribute attribute = new TAVPAGTextAttribute();
+                attribute.fontSize = 60;
+                attribute.text = "文本替换试验";
+                Toast.makeText(this, "取消字体", Toast.LENGTH_SHORT).show();
+                title.replaceText(0, attribute);
+            }
+            flag = !flag;
+        });
     }
 
+    private boolean flag = false;
 
 }
