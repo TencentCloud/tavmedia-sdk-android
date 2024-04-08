@@ -9,7 +9,6 @@ import android.view.ViewGroup.LayoutParams;
 import android.widget.FrameLayout;
 import android.widget.Toast;
 import androidx.appcompat.app.AppCompatActivity;
-import com.tencent.libav.model.TinLocalImageInfoBean;
 import com.tencent.tavmedia.TAVComposition;
 import com.tencent.tavmedia.TAVMovie;
 import com.tencent.tavmedia.TAVMovieAsset;
@@ -71,9 +70,9 @@ public class PAGTemplateActivity extends AppCompatActivity {
             TAVPAGEditableInfo editableInfo = editableInfos[i];
             for (TAVPAGImageLayerInfo imageLayerInfo : editableInfo.layerInfo) {
                 // 5.基于每个图层的VideoRanges信息，创建对应的视频轨道/图片轨道
-                TinLocalImageInfoBean imageInfoBean = MainActivity.SELECT_DATA.get(i);
+                MediaItem imageInfoBean = MainActivity.SELECT_DATA.get(i);
                 if (imageInfoBean.isVideo()) {
-                    TAVMovieAsset asset = TAVMovieAsset.MakeFromPath(imageInfoBean.mPath);
+                    TAVMovieAsset asset = TAVMovieAsset.MakeFromPath(imageInfoBean.getPath());
                     TAVMovie movie = TAVMovie.MakeFrom(asset, imageLayerInfo.displayVideoRanges);
                     movie.setStartTime(imageLayerInfo.layerStartTime);
                     effect.addInput(movie);
@@ -83,7 +82,7 @@ public class PAGTemplateActivity extends AppCompatActivity {
                 }
                 if (imageInfoBean.isImage()) {
                     // 把Image替换到占位图
-                    TAVPAGImageReplacement replacement = TAVPAGImageReplacement.MakeFromPath(imageInfoBean.mPath);
+                    TAVPAGImageReplacement replacement = TAVPAGImageReplacement.MakeFromPath(imageInfoBean.getPath());
                     effect.replaceImage(editableInfo.editableIndex, replacement);
                 }
             }

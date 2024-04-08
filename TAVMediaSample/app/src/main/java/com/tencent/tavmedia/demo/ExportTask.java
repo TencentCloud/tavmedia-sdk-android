@@ -9,6 +9,7 @@ import android.util.Log;
 import android.widget.Toast;
 import com.tencent.tavmedia.TAVExport;
 import com.tencent.tavmedia.TAVExportCallback;
+import com.tencent.tavmedia.TAVExportConfig;
 import com.tencent.tavmedia.TAVExportConfig.Builder;
 import com.tencent.tavmedia.TAVMovie;
 import com.tencent.tavmedia.TAVMovieAsset;
@@ -22,6 +23,11 @@ import java.util.concurrent.Executors;
 import org.json.JSONArray;
 import org.json.JSONObject;
 
+/**
+ * 这是一个自动化测试的task，主要功能是根据配置的各种参数，相互组合执行视频合成，检验各种视频编码参数的表现
+ * 使用时修改静态变量的各个数组、往assets里面放mp4源文件，
+ * 运行时会使用各种参数对源文件进行转码，输出到tavkit_demo文件夹
+ */
 public class ExportTask {
 
     static final String TAG = "ExportTask";
@@ -34,7 +40,7 @@ public class ExportTask {
     private static final boolean[] bFrames = {true};
     private static final String[] mimes = {MediaFormat.MIMETYPE_VIDEO_AVC};
     /**
-     * {MediaCodecInfo.EncoderCapabilities.BITRATE_MODE_CQ,
+     *{MediaCodecInfo.EncoderCapabilities.BITRATE_MODE_CQ,
      * MediaCodecInfo.EncoderCapabilities.BITRATE_MODE_VBR,
      * MediaCodecInfo.EncoderCapabilities.BITRATE_MODE_CBR}
      */
@@ -182,7 +188,7 @@ public class ExportTask {
     private void startExport() {
         // 单次合成代码
         if (true) {
-            Builder config = new Builder();
+            TAVExportConfig.Builder config = new Builder();
             for (int i = 0; i < 10; i++) {
                 export("video-640x360.mp4", "single_export_" + i + ".mp4", config);
             }
@@ -196,7 +202,7 @@ public class ExportTask {
 
         for (Point size : sizes) {
             // 然后开始分发各种不同的参数执行导出
-            Builder config = new Builder()
+            TAVExportConfig.Builder config = new Builder()
                     .setVideoWidth(size.x)
                     .setVideoHeight(size.y);
             traverseBitRates(config);
@@ -238,7 +244,7 @@ public class ExportTask {
         }
     }
 
-    private void traverseBitRates(Builder config) {
+    private void traverseBitRates(TAVExportConfig.Builder config) {
         for (float bitRate : bitRates) {
             config.setVideoBitrateBps((int) bitRate);
             // 遍历GOP
@@ -246,7 +252,7 @@ public class ExportTask {
         }
     }
 
-    private void traverseIFrameIntervals(Builder config) {
+    private void traverseIFrameIntervals(TAVExportConfig.Builder config) {
 //        for (int iFrameInterval : iFrameIntervals) {
 //            config.setVideoIFrameInterval(iFrameInterval);
         // 遍历音频轨道
@@ -254,7 +260,7 @@ public class ExportTask {
 //        }
     }
 
-    private void traverseAudioCounts(Builder config) {
+    private void traverseAudioCounts(TAVExportConfig.Builder config) {
         for (int audioCount : audioCounts) {
             config.setChannels(audioCount);
             // 遍历编码模式
@@ -262,21 +268,21 @@ public class ExportTask {
         }
     }
 
-    private void traverseBitModes(Builder config) {
+    private void traverseBitModes(TAVExportConfig.Builder config) {
         for (int bitMode : bitmodes) {
             // 编码模式设置暂时不用，保留这个方法做调试
             traverseQualities(config);
         }
     }
 
-    private void traverseQualities(Builder config) {
+    private void traverseQualities(TAVExportConfig.Builder config) {
 //        for (boolean quality : qualitys) {
 //            config.setHighProfile(quality);
         traverseBFrames(config);
 //        }
     }
 
-    private void traverseBFrames(Builder config) {
+    private void traverseBFrames(TAVExportConfig.Builder config) {
 //        for (boolean bFrame : bFrames) {
 //            config.setEnableBFrame(bFrame);
         // 开启B帧调试
@@ -284,14 +290,14 @@ public class ExportTask {
 //        }
     }
 
-    private void traverseMimes(Builder config) {
+    private void traverseMimes(TAVExportConfig.Builder config) {
 //        for (String mime : mimes) {
 //            config.setOutputVideoMimeType(mime);
         traverseFileNames(config);
 //        }
     }
 
-    private void traverseFileNames(Builder outputConfig) {
+    private void traverseFileNames(TAVExportConfig.Builder outputConfig) {
         for (String inputFileName : fileNames) {
             String outputName = buildFileName(inputFileName, outputConfig, true);
             export(inputFileName, outputName, outputConfig);
@@ -299,7 +305,7 @@ public class ExportTask {
     }
 
     private void export(String inputFileName, String outputFileName,
-            Builder outputConfig) {
+            TAVExportConfig.Builder outputConfig) {
         String inputFilePath = Utils.OUT_SAVE_VIDEOS_DIR + inputFileName;
         doExport(inputFilePath, outputConfig, outputFileName);
         context.onExportStart();
@@ -310,7 +316,7 @@ public class ExportTask {
 
     private int threadId = 0;
 
-    private void doExport(final String videoPath, Builder outputConfig,
+    private void doExport(final String videoPath, TAVExportConfig.Builder outputConfig,
             String fileName) {
         Log.d(TAG, "doExport() called with: videoPath = [" + videoPath + "], outputConfig = [" + outputConfig
                 + "], fileName = [" + fileName + "]");
@@ -338,11 +344,11 @@ public class ExportTask {
 
     }
 
-    private String buildFileName(String inputName, Builder outputConfig) {
+    private String buildFileName(String inputName, TAVExportConfig.Builder outputConfig) {
         return buildFileName(inputName, outputConfig, false);
     }
 
-    private String buildFileName(String inputName, Builder outputConfig,
+    private String buildFileName(String inputName, TAVExportConfig.Builder outputConfig,
             boolean appendSize) {
 
         String sourceName = inputName.split("[.]")[0] + "-";

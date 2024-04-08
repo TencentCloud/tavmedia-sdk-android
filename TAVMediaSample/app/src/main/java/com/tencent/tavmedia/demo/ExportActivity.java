@@ -20,7 +20,6 @@ import java.io.File;
 public class ExportActivity extends AppCompatActivity {
 
     private static final String TAG = "ExportActivity";
-    private static final int MAX_PROGRESS = 1000;
     private Button btnExport;
     private ProgressBar progressBar;
     private TAVExport tavExport;
@@ -40,7 +39,7 @@ public class ExportActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_export);
         progressBar = findViewById(R.id.progressBar);
-        progressBar.setMax(MAX_PROGRESS);
+        progressBar.setMax(1000);
         progressBar.setProgress(0);
         btnExport = findViewById(R.id.export);
     }
@@ -72,22 +71,13 @@ public class ExportActivity extends AppCompatActivity {
         }
     }
 
-    private synchronized void onExportFinish() {
-        Log.d(TAG, "onExportFinish() called");
+    private void onExportFinish() {
         // 变量置空，及时释放内存
         tavExport = null;
         runOnUiThread(() -> {
-            Log.d(TAG, "onExportFinish() runOnUiThread");
             btnExport.setEnabled(true);
             progressBar.setProgress(0);
         });
-    }
-
-    private synchronized void setProgress(float progress) {
-        if (tavExport == null) {
-            return;
-        }
-        progressBar.setProgress((int) (progress * MAX_PROGRESS));
     }
 
     private static class MyTAVLicenseAuthListener implements TAVLicenseAuthListener {
@@ -121,7 +111,7 @@ public class ExportActivity extends AppCompatActivity {
         @Override
         public void onProgress(float progress) {
             Log.v(TAG, "onProgress() called with: progress = [" + progress + "]");
-            setProgress(progress);
+            progressBar.setProgress((int) (progress * 100));
         }
 
         @Override
@@ -130,6 +120,4 @@ public class ExportActivity extends AppCompatActivity {
             onExportFinish();
         }
     }
-
-
 }

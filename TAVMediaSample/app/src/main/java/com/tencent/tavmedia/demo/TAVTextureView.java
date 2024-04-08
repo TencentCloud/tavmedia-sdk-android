@@ -52,7 +52,6 @@ public class TAVTextureView extends TextureView {
     private PlayerListener playerListener;
 
     interface PlayerListener {
-
         void onProgressChanged(float process);
     }
 
@@ -117,7 +116,6 @@ public class TAVTextureView extends TextureView {
     }
 
     private class MySurfaceTextureListener implements SurfaceTextureListener {
-
         @Override
         public void onSurfaceTextureAvailable(SurfaceTexture surface, int width, int height) {
             if (mediaSurface != null) {
@@ -162,7 +160,7 @@ public class TAVTextureView extends TextureView {
 
         @Override
         public void onSurfaceTextureUpdated(SurfaceTexture surface) {
-            Log.d("ffjiefan:", "onSurfaceTextureUpdated() called with: surface = [" + surface + "]");
+            Log.v(TAG, "onSurfaceTextureUpdated() called with: surface = [" + surface + "]");
         }
     }
 

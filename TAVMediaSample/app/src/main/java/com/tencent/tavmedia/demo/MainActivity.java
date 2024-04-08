@@ -2,6 +2,7 @@ package com.tencent.tavmedia.demo;
 
 import android.Manifest.permission;
 import android.content.Intent;
+import android.net.Uri;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.View;
@@ -12,22 +13,22 @@ import com.mylhyl.acp.Acp;
 import com.mylhyl.acp.AcpListener;
 import com.mylhyl.acp.AcpOptions;
 import com.mylhyl.acp.AcpOptions.Builder;
-import com.tencent.libav.LocalAlbumActivity;
-import com.tencent.libav.PhotoSelectorProxyConsts;
-import com.tencent.libav.model.TinLocalImageInfoBean;
-import com.tencent.libav.model.TinLocalImageInfoBean.InvalidImageException;
+import com.zhihu.matisse.Matisse;
+import com.zhihu.matisse.MimeType;
+import com.zhihu.matisse.engine.impl.GlideEngine;
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
+import java.util.Set;
 
 public class MainActivity extends AppCompatActivity {
 
-    public static List<TinLocalImageInfoBean> SELECT_DATA;
+    public static List<MediaItem> SELECT_DATA;
 
     private static final String TAG = "MainActivity";
-    private static final int REQUEST_CODE = 10086;
+    private static final int PICK_IMAGES_AND_VIDEOS_REQUEST = 10011;
 
     private Runnable onSelectedVideo;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -40,19 +41,19 @@ public class MainActivity extends AppCompatActivity {
         // 这里可以放启动app直接进入的逻辑
 //        try {
 //            SELECT_DATA = Collections.singletonList(
-//                    new TinLocalImageInfoBean("/storage/emulated/0/tavmedia_demo/seal.mp4"));
+//                    new MediaItem(OUT_SAVE_DIR + "video-640x360.mp4"));
 //        } catch (InvalidImageException e) {
-//            Log.e(TAG, "onCreate: new TinLocalImageInfoBean ", e);
+//            Log.e(TAG, "onCreate: new MediaItem ", e);
 //        }
 //        MultiClipActivity.start(this);
     }
 
     public void jumpExportActivity(View view) {
-        selectVideo(false, () -> ExportActivity.start(view.getContext()));
+        selectVideo(false, () -> ExportActivity.start(MainActivity.this));
     }
 
     public void jumpAudioPlayerActivity(View view) {
-        selectVideo(true, () -> AudioPlayerActivity.start(view.getContext()));
+        selectVideo(true, () -> AudioPlayerActivity.start(MainActivity.this));
     }
 
     public void jumpTemplateActivity(View view) {
@@ -60,40 +61,49 @@ public class MainActivity extends AppCompatActivity {
     }
 
     public void jumpMultiClipActivity(View view) {
-        selectVideo(false, () -> MultiClipActivity.start(view.getContext()));
+        selectVideo(false, () -> MultiClipActivity.start(MainActivity.this));
     }
 
     public void jumpSnapshotActivity(View view) {
-        selectVideo(false, () -> SnapshotActivity.start(view.getContext()));
+        selectVideo(false, () -> SnapshotActivity.start(MainActivity.this));
     }
 
     public void jumpUpdateRenderSizeActivity(View view) {
-        selectVideo(false, () -> UpdateRenderSizeActivity.start(view.getContext()));
+        selectVideo(false, () -> UpdateRenderSizeActivity.start(MainActivity.this));
+    }
+
+    public void jumpTextActivity(View view) {
+        this.startActivity(new Intent("com.tencent.tavmedia.demo.test.TextActivity"));
     }
 
     public void jumpColorTuningActivity(View view) {
-        selectVideo(false, () -> ColorTuningActivity.start(view.getContext()));
+        selectVideo(false, () -> ColorTuningActivity.start(MainActivity.this));
     }
+
     public void jumpSerializableActivity(View view) {
-        SerializableActivity.start(view.getContext());
+        SerializableActivity.start(MainActivity.this);
     }
 
     public void jumpPAGTemplateActivity(View view) {
         Toast.makeText(this, "请选3个素材", Toast.LENGTH_LONG).show();
-        selectVideo(false,  () -> PAGTemplateActivity.start(view.getContext()));
+        selectVideo(false, () -> PAGTemplateActivity.start(MainActivity.this));
     }
 
     public void jumpAutoTestActivity(View view) {
-        AutoTestActivity.start(view.getContext());
+        AutoTestActivity.start(MainActivity.this);
     }
 
     private void selectVideo(boolean onlyVideo, Runnable onSelectedVideo) {
         this.onSelectedVideo = onSelectedVideo;
-        if (onlyVideo) {
-            LocalAlbumActivity.startChooseVideo(this, 0, REQUEST_CODE);
-        } else {
-            LocalAlbumActivity.startChoosePhotoAndVideo(this, 0, REQUEST_CODE);
-        }
+        Set<MimeType> typeSet = onlyVideo ? MimeType.ofVideo() : MimeType.ofAll();
+        Matisse.from(this)
+                .choose(typeSet)
+                .countable(true)
+                .maxSelectable(10)
+                .thumbnailScale(0.85f)
+                .imageEngine(new GlideEngine())
+                .forResult(PICK_IMAGES_AND_VIDEOS_REQUEST);
+
     }
 
 
@@ -120,17 +130,19 @@ public class MainActivity extends AppCompatActivity {
     @Override
     protected void onActivityResult(int requestCode, int resultCode, @Nullable Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
-        if (requestCode == REQUEST_CODE && resultCode == RESULT_OK && data != null) {
-            SELECT_DATA = (ArrayList<TinLocalImageInfoBean>) data
-                    .getSerializableExtra(PhotoSelectorProxyConsts.KEY_SELECTED_DATA);
-            StringBuilder sb = new StringBuilder();
-            sb.append("selected items:\n");
-            for (TinLocalImageInfoBean datum : SELECT_DATA) {
-                sb.append(datum.mPath);
-                sb.append(";\n");
-            }
-            Log.i(TAG, "onActivityResult: " + sb);
 
+        if (requestCode == PICK_IMAGES_AND_VIDEOS_REQUEST && resultCode == RESULT_OK && data != null) {
+            // 处理选中的图片和视频
+            SELECT_DATA = new ArrayList<>();
+            List<Uri> selectedUris = Matisse.obtainResult(data);
+            for (Uri uri : selectedUris) {
+                String mimeType = getContentResolver().getType(uri);
+                MediaItem.MediaType type = mimeType.startsWith("image/") ?
+                        MediaItem.MediaType.IMAGE :
+                        MediaItem.MediaType.VIDEO;
+                SELECT_DATA.add(new MediaItem(Utils.getPathFromUri(uri, this), type));
+            }
+            Log.i(TAG, "onActivityResult: " + SELECT_DATA);
             if (onSelectedVideo != null) {
                 onSelectedVideo.run();
                 onSelectedVideo = null;

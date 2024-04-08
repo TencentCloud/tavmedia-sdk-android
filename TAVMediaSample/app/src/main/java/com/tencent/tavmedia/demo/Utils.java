@@ -2,19 +2,20 @@ package com.tencent.tavmedia.demo;
 
 import android.annotation.SuppressLint;
 import android.app.Activity;
+import android.content.ContentUris;
 import android.content.Context;
 import android.content.res.AssetManager;
+import android.database.Cursor;
 import android.graphics.Matrix;
+import android.net.Uri;
+import android.os.Build;
 import android.os.Environment;
+import android.provider.DocumentsContract;
+import android.provider.MediaStore;
 import android.util.Log;
 import android.widget.Toast;
-import com.tencent.libav.model.TinLocalImageInfoBean;
 import com.tencent.tavmedia.TAVAsset;
 import com.tencent.tavmedia.TAVComposition;
-import com.tencent.tavmedia.TAVExport;
-import com.tencent.tavmedia.TAVExportCallback;
-import com.tencent.tavmedia.TAVExportConfig;
-import com.tencent.tavmedia.TAVExportConfig.Builder;
 import com.tencent.tavmedia.TAVImageAsset;
 import com.tencent.tavmedia.TAVMovie;
 import com.tencent.tavmedia.TAVMovieAsset;
@@ -53,11 +54,11 @@ public class Utils {
 
     public static void initCacheDir(Context context) {
 //        Android Q 逻辑
-//        if (Build.VERSION.SDK_INT > Build.VERSION_CODES.P) {
-//            File file = context.getExternalFilesDir("tavmedia_demo");
-//            file.mkdirs();
-//            OUT_SAVE_DIR = file.getAbsolutePath() + "/";
-//        }
+        if (Build.VERSION.SDK_INT > Build.VERSION_CODES.P) {
+            File file = context.getExternalFilesDir("tavmedia_demo");
+            file.mkdirs();
+            OUT_SAVE_DIR = file.getAbsolutePath() + "/";
+        }
     }
 
     public static String loadJSONFromAssets(Context context, String path) {
@@ -373,11 +374,11 @@ public class Utils {
         return makeComposition(MainActivity.SELECT_DATA, width, height);
     }
 
-    public static TAVComposition makeComposition(List<TinLocalImageInfoBean> selectData, float width,
+    public static TAVComposition makeComposition(List<MediaItem> selectData, float width,
             float height) {
         long totalTime = 0;
         ArrayList<TAVMovie> movies = new ArrayList<>();
-        for (TinLocalImageInfoBean selectDatum : selectData) {
+        for (MediaItem selectDatum : selectData) {
             TAVMovie movie = makeMovie(selectDatum);
             Utils.fitToTarget(movie, width, height);
             // 设置时间，首尾相接
@@ -396,22 +397,22 @@ public class Utils {
         return composition;
     }
 
-    public static TAVMovie makeMovie(TinLocalImageInfoBean selectDatum) {
+    public static TAVMovie makeMovie(MediaItem selectDatum) {
 
         if (selectDatum.isVideo()) {
-            TAVAsset asset = TAVMovieAsset.MakeFromPath(selectDatum.mPath);
+            TAVAsset asset = TAVMovieAsset.MakeFromPath(selectDatum.getPath());
             TAVMovie movie = TAVMovie.MakeFrom(asset, 0, asset.duration());
             movie.setDuration(asset.duration());
             return movie;
         }
         if (selectDatum.isImage()) {
-            TAVAsset asset = TAVImageAsset.MakeFromPath(selectDatum.mPath);
+            TAVAsset asset = TAVImageAsset.MakeFromPath(selectDatum.getPath());
             // 图片默认两秒
             TAVMovie movie = TAVMovie.MakeFrom(asset, 0, 2_000_000);
             movie.setDuration(2_000_000);
             return movie;
         }
-        throw new RuntimeException("不支持的type:" + selectDatum.mimeType + ", 谢谢。");
+        throw new RuntimeException("不支持的type:" + selectDatum.getType() + ", 谢谢。");
 
     }
 
@@ -438,26 +439,73 @@ public class Utils {
         activity.runOnUiThread(() -> Toast.makeText(activity, text, Toast.LENGTH_LONG).show());
     }
 
-    public static void runExport(TAVMovie media, TAVExportCallback callback) {
-        String outputFilePath = Utils.createNewFile(Utils.OUT_SAVE_EXPORT_DIR, "tav_export_video.mp4")
-                .getAbsolutePath();
-        runExport(media, outputFilePath, callback);
+    static String getPathFromUri(Uri uri, Context context) {
+        if (DocumentsContract.isDocumentUri(context, uri)) {
+            if (isExternalStorageDocument(uri)) {
+                final String docId = DocumentsContract.getDocumentId(uri);
+                final String[] split = docId.split(":");
+                final String type = split[0];
+
+                if ("primary".equalsIgnoreCase(type)) {
+                    return Environment.getExternalStorageDirectory() + "/" + split[1];
+                }
+            } else if (isDownloadsDocument(uri)) {
+                final String id = DocumentsContract.getDocumentId(uri);
+                final Uri contentUri = ContentUris.withAppendedId(
+                        Uri.parse("content://downloads/public_downloads"), Long.valueOf(id));
+
+                return getDataColumn(context, contentUri, null, null);
+            } else if (isMediaDocument(uri)) {
+                final String[] split = DocumentsContract.getDocumentId(uri).split(":");
+                final String type = split[0];
+
+                Uri contentUri = null;
+                if ("image".equals(type)) {
+                    contentUri = MediaStore.Images.Media.EXTERNAL_CONTENT_URI;
+                } else if ("video".equals(type)) {
+                    contentUri = MediaStore.Video.Media.EXTERNAL_CONTENT_URI;
+                }
+
+                final String selection = "_id=?";
+                final String[] selectionArgs = new String[]{split[1]};
+
+                return getDataColumn(context, contentUri, selection, selectionArgs);
+            }
+        } else if ("content".equalsIgnoreCase(uri.getScheme())) {
+            return getDataColumn(context, uri, null, null);
+        } else if ("file".equalsIgnoreCase(uri.getScheme())) {
+            return uri.getPath();
+        }
+        return null;
     }
 
-    public static void runExport(TAVMovie media, String outputFilePath, TAVExportCallback callback) {
-        TAVExportConfig config = new Builder()
-                .setVideoWidth(media.width())
-                .setFrameRate(24)
-                .setVideoHeight(media.height())
-                .setOutFilePath(outputFilePath)
-                .setUseHWEncoder(true)
-                .build();
-        runExport(media, config, callback);
+    private static String getDataColumn(Context context, Uri uri, String selection, String[] selectionArgs) {
+        Cursor cursor = null;
+        final String[] projection = {MediaStore.Images.Media.DATA};
+        try {
+            cursor = context.getContentResolver().query(uri, projection, selection, selectionArgs, null);
+            if (cursor != null && cursor.moveToFirst()) {
+                int columnIndex = cursor.getColumnIndexOrThrow(MediaStore.Images.Media.DATA);
+                return cursor.getString(columnIndex);
+            }
+        } finally {
+            if (cursor != null) {
+                cursor.close();
+            }
+        }
+        return null;
     }
 
-    public static void runExport(TAVMovie media, TAVExportConfig config, TAVExportCallback callback) {
-        new Thread(() -> new TAVExport(media, config, callback).export()).start();
+    private static boolean isExternalStorageDocument(Uri uri) {
+        return "com.android.externalstorage.documents".equals(uri.getAuthority());
+    }
 
+    private static boolean isDownloadsDocument(Uri uri) {
+        return "com.android.providers.downloads.documents".equals(uri.getAuthority());
+    }
+
+    private static boolean isMediaDocument(Uri uri) {
+        return "com.android.providers.media.documents".equals(uri.getAuthority());
     }
 
     public interface Callback {

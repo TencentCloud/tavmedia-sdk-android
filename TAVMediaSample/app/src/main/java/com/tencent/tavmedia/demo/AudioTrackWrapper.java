@@ -126,6 +126,7 @@ public class AudioTrackWrapper {
             mode = AudioTrack.MODE_STREAM;//使用流类型
             this.sampleRateInHz = getSampleRateInHz(sampleRateInHz, channelCount);
 //            this.bufferSizeInBytes = AudioTrack.getMinBufferSize(sampleRateInHz, channelConfig, audioFormat);
+            // 固定设置为8192（每次读取的数据长度目前固定为8192字节）的整数倍，避免因为长度不同导致出现杂音
             this.bufferSizeInBytes = bufferSizeInBytes;
 
         }

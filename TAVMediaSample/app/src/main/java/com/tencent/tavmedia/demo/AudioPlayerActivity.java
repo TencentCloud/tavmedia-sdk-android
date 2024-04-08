@@ -61,12 +61,13 @@ public class AudioPlayerActivity extends AppCompatActivity {
         }
 
         void initData() {
-            String path = MainActivity.SELECT_DATA.get(0).mPath;
+            String path = MainActivity.SELECT_DATA.get(0).getPath();
             Log.d("Log", "path is " + path);
             TAVMovieAsset asset = TAVMovieAsset.MakeFromPath(path);
             TAVMovie media = TAVMovie.MakeFrom(asset, 0, asset.duration());
             media.setDuration(asset.duration());
-            audioReader = TAVAudioReader.Make(media, 44100, 2, 4096);
+            audioReader = TAVAudioReader.Make(media);
+
             audioTrackWrapper = new AudioTrackWrapper(44100, 2, 4096);
             audioTrackWrapper.setVolume(1);
 
