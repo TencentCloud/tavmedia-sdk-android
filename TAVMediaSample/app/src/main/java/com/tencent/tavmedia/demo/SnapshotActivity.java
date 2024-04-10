@@ -14,6 +14,7 @@ import android.os.Bundle;
 import android.os.Handler;
 import android.os.HandlerThread;
 import android.util.Log;
+import android.view.Surface;
 import android.widget.ImageView;
 import androidx.appcompat.app.AppCompatActivity;
 import com.tencent.tavmedia.TAVComposition;
@@ -55,7 +56,11 @@ public class SnapshotActivity extends AppCompatActivity {
         Handler handler = new Handler(handlerThread.getLooper());
         imageReader.setOnImageAvailableListener(new MyOnImageAvailableListener(videoReader, composition), handler);
 
-        videoReader.setSurface(TAVSurface.FromSurface(imageReader.getSurface(), EGL14.EGL_NO_CONTEXT));
+        Surface surface = imageReader.getSurface();
+        assert surface != null;
+        assert surface.isValid();
+
+        videoReader.setSurface(TAVSurface.FromSurface(surface, EGL14.EGL_NO_CONTEXT));
         lastFrameTimeMs = System.currentTimeMillis();
         videoReader.readNextFrame();
     }
@@ -106,7 +111,7 @@ public class SnapshotActivity extends AppCompatActivity {
                 OutputStream os = new BufferedOutputStream(new FileOutputStream(file));
                 bitmap.compress(Bitmap.CompressFormat.PNG, 0, os);
                 os.close();
-                bitmap.recycle();
+//                bitmap.recycle();
             } catch (IOException e) {
                 Log.e(TAG, "saveToFile: ", e);
             }
